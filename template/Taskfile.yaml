@@ -7,8 +7,6 @@ tasks:
     deps:
       - front:dev
       - server:dev
-    cmds:
-      - ""
 
   preview:
     deps:
