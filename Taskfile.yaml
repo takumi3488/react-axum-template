@@ -1,0 +1,24 @@
+version: "3"
+
+tasks:
+  default:
+    aliases:
+      - e2e
+    deps:
+      - build
+      - reset_work_dir
+    env:
+      RUST_BACKTRACE: 1
+    dir: work_dir
+    cmds:
+      - ../target/debug/react-axum-template a
+      - cd a && cargo test && task e2e
+
+  build:
+    cmds:
+      - cargo build
+
+  reset_work_dir:
+    cmds:
+      - rm -rf work_dir
+      - mkdir -p work_dir

@@ -1,0 +1,54 @@
+version: "3"
+
+tasks:
+  default:
+    aliases:
+      - dev
+    deps:
+      - front:dev
+      - server:dev
+    cmds:
+      - ""
+
+  preview:
+    deps:
+      - front:build
+      - server:build
+    cmds:
+      - ./target/debug/{{PROJECT_NAME}}
+
+  front:dev:
+    env:
+      FARM_BACKEND_ORIGIN: http://localhost:3000
+    cmds:
+      - pnpm run dev
+
+  front:build:
+    cmds:
+      - pnpm run build
+
+  server:dev:
+    cmds:
+      - cargo run
+
+  server:build:
+    cmds:
+      - cargo build
+
+  e2e:
+    cmds:
+      - task e2e:dev
+      - task e2e:preview
+
+  e2e:dev:
+    cmds:
+      - docker compose up -d --build server web
+      - docker compose up e2e-dev
+      - docker compose stop server web
+
+  e2e:preview:
+    cmds:
+      - docker compose up -d --build preview
+      - while ! curl -s http://localhost:3000/api/health; do sleep 1; done
+      - docker compose up e2e-preview
+      - docker compose stop preview
