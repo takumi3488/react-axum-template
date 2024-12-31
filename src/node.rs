@@ -106,6 +106,7 @@ impl Node {
         let dependencies = vec![
             NpmPackage::new("@biomejs/biome", true),
             NpmPackage::new("@playwright/test", true),
+            NpmPackage::new("@types/node", true),
         ];
         for dependency in dependencies {
             let mut args = vec!["install"];
