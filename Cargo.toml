@@ -1,17 +1,17 @@
 [package]
 name = "react-axum-template"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 description = "A template for React in Axum"
 
 [dependencies]
-anyhow = "1.0.94"
+anyhow = "1.0.95"
 axum = "0.7.9"
 dialoguer = "0.11.0"
 indicatif = "0.17.9"
 tokio = { version = "1.42.0", features = ["full"] }
-which = "7.0.0"
+which = "7.0.1"
 
 [profile.release]
 strip = true
