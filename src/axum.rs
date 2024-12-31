@@ -18,7 +18,7 @@ impl Axum {
         let project_path = Path::new(&self.project_name);
 
         // init axum project
-        let bar = bar!("Creating axum project...", 8);
+        let bar = bar!("Creating axum project...", 9);
         let response = Command::new("cargo")
             .arg("init")
             .current_dir(project_path)
@@ -35,7 +35,7 @@ impl Axum {
         }
 
         // install common dependencies
-        let bar = bar!("Installing dependencies...", 9);
+        let bar = bar!("Installing dependencies...", 10);
         let response = Command::new("cargo")
             .args([
                 "add",

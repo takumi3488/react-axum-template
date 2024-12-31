@@ -101,8 +101,17 @@ impl Node {
             .await?;
         bar.finish();
 
+        // upgrade dependencies
+        let bar = bar!("Upgrading dependencies...", 3);
+        Command::new("pnpm")
+            .args(["upgrade", "--latest"])
+            .current_dir(&self.project_name)
+            .output()
+            .await?;
+        bar.finish();
+
         // add dependencies
-        let bar = bar!("Adding dependencies...", 3);
+        let bar = bar!("Adding dependencies...", 4);
         let dependencies = vec![
             NpmPackage::new("@biomejs/biome", true),
             NpmPackage::new("@playwright/test", true),
@@ -120,7 +129,7 @@ impl Node {
         bar.finish();
 
         // biome init
-        let bar = bar!("Initializing biome...", 4);
+        let bar = bar!("Initializing biome...", 5);
         let response = Command::new("pnpm")
             .args(["biome", "init"])
             .current_dir(&self.project_name)
@@ -145,7 +154,7 @@ impl Node {
         write(package_json_path, package_json_text).await?;
 
         // run biome check:write
-        let bar = bar!("Linting project...", 5);
+        let bar = bar!("Linting project...", 6);
         let response = Command::new("pnpm")
             .args(["run", "check:write"])
             .current_dir(&self.project_name)
@@ -160,7 +169,7 @@ impl Node {
         bar.finish();
 
         // install playwight
-        let bar = bar!("Installing playwright...", 6);
+        let bar = bar!("Installing playwright...", 7);
         Command::new("pnpm")
             .arg("run")
             .arg("playwright:install")
@@ -171,7 +180,7 @@ impl Node {
         bar.finish();
 
         // check if the project is created successfully
-        let bar = bar!("Checking project...", 7);
+        let bar = bar!("Checking project...", 8);
         let response = Command::new("pnpm")
             .args(["run", "check"])
             .current_dir(&self.project_name)
