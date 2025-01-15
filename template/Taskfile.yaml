@@ -50,3 +50,8 @@ tasks:
       - while ! curl -s http://localhost:3000/api/health; do sleep 1; done
       - docker compose up e2e-preview
       - docker compose stop preview
+
+  lint:
+    deps:
+      - front:lint
+      - server:lint
