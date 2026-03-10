@@ -5,6 +5,8 @@ use tokio::{fs::write, process::Command};
 
 use crate::bar;
 
+const MAIN_TEXT: &str = include_str!("../template/main.rs");
+
 pub struct Axum {
     pub project_name: String,
 }
@@ -24,7 +26,6 @@ impl Axum {
             .current_dir(project_path)
             .output()
             .await?;
-        const MAIN_TEXT: &str = include_str!("../template/main.rs");
         write(project_path.join("src/main.rs"), MAIN_TEXT).await?;
         bar.finish();
         if !response.status.success() {
