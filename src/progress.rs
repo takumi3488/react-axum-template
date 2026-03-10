@@ -4,7 +4,10 @@ macro_rules! bar {
         let bar = ProgressBar::new_spinner()
             .with_message($message)
             .with_position($pos);
-        bar.set_style(ProgressStyle::with_template("[{pos:>1}/10]{spinner} {msg}").unwrap());
+        bar.set_style(
+            ProgressStyle::with_template("[{pos:>1}/10]{spinner} {msg}")
+                .unwrap_or_else(|_| ProgressStyle::default_spinner()),
+        );
         bar.enable_steady_tick(Duration::from_millis(100));
         bar
     }};

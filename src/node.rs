@@ -9,6 +9,12 @@ use tokio::{
 
 use crate::bar;
 
+const FARM_CONFIG_TEXT: &str = include_str!("../template/farm.config.ts");
+const INDEX_TSX_TEXT: &str = include_str!("../template/index.tsx");
+const MAIN_TSX_TEXT: &str = include_str!("../template/main.tsx");
+const INDEX_HTML_TEXT: &str = include_str!("../template/index.html");
+const E2E_TEST_TEXT: &str = include_str!("../template/e2e.test.ts");
+
 struct NpmPackage {
     name: String,
     dev: bool,
@@ -42,7 +48,9 @@ impl Node {
         }
     }
 
-    pub async fn create_project(&self) -> Result<()> {
+    async fn setup_project_structure(&self) -> Result<()> {
+        let project_path = Path::new(&self.project_name);
+
         // create farm project
         let bar = bar!("Creating farm project...", 1);
         Command::new("pnpm")
@@ -58,19 +66,16 @@ impl Node {
         bar.finish();
 
         // rename src/ to page/
-        let project_path = Path::new(&self.project_name);
         rename(
             format!("{}/src", &self.project_name),
             format!("{}/page", &self.project_name),
         )
         .await?;
-        let tsconfig_path = project_path.join("tsconfig.json");
-        let tsconfig_path = Path::new(&tsconfig_path);
-        let tsconfig_text = read_to_string(tsconfig_path)
+        let tsconfig_buf = project_path.join("tsconfig.json");
+        let tsconfig_text = read_to_string(&tsconfig_buf)
             .await?
             .replace(r#""include": ["src"],"#, r#""include": ["page", "tests"],"#);
-        write(tsconfig_path, tsconfig_text).await?;
-        const FARM_CONFIG_TEXT: &str = include_str!("../template/farm.config.ts");
+        write(&tsconfig_buf, tsconfig_text).await?;
         write(project_path.join("farm.config.ts"), FARM_CONFIG_TEXT).await?;
 
         // remove default files
@@ -81,17 +86,17 @@ impl Node {
         remove_file(project_path.join("page/main.css")).await?;
         remove_file(project_path.join("page/typings.d.ts")).await?;
 
-        // set default index.tsx, main.tsx, index.html, e2e.test.ts
-        const INDEX_TSX_TEXT: &str = include_str!("../template/index.tsx");
+        // set default files
         write(project_path.join("page/index.tsx"), INDEX_TSX_TEXT).await?;
-        const MAIN_TSX_TEXT: &str = include_str!("../template/main.tsx");
         write(project_path.join("page/main.tsx"), MAIN_TSX_TEXT).await?;
-        const INDEX_HTML_TEXT: &str = include_str!("../template/index.html");
         write(project_path.join("page/index.html"), INDEX_HTML_TEXT).await?;
-        const E2E_TEST_TEXT: &str = include_str!("../template/e2e.test.ts");
         create_dir_all(project_path.join("tests")).await?;
         write(project_path.join("tests/e2e.test.ts"), E2E_TEST_TEXT).await?;
 
+        Ok(())
+    }
+
+    async fn install_dependencies(&self) -> Result<()> {
         // install dependencies
         let bar = bar!("Installing dependencies...", 2);
         Command::new("pnpm")
@@ -128,6 +133,12 @@ impl Node {
         }
         bar.finish();
 
+        Ok(())
+    }
+
+    async fn configure_biome(&self) -> Result<()> {
+        let project_path = Path::new(&self.project_name);
+
         // biome init
         let bar = bar!("Initializing biome...", 5);
         let response = Command::new("pnpm")
@@ -141,17 +152,15 @@ impl Node {
         bar.finish();
 
         // add biome and playwright scripts
-        let package_json_path = project_path.join("package.json");
-        let package_json_path = Path::new(&package_json_path);
-        let package_json_text = read_to_string(package_json_path).await?;
-        let package_json_text = package_json_text.replace(
+        let package_json_buf = project_path.join("package.json");
+        let package_json_text = read_to_string(&package_json_buf).await?.replace(
             r#""scripts": {"#,
             r#""scripts": {
     "check": "biome check ./page",
     "check:write": "biome check --write --unsafe ./page",
     "e2e": "playwright test","#,
         );
-        write(package_json_path, package_json_text).await?;
+        write(&package_json_buf, package_json_text).await?;
 
         // run biome check:write
         let bar = bar!("Linting project...", 6);
@@ -168,7 +177,11 @@ impl Node {
         }
         bar.finish();
 
-        // install playwight
+        Ok(())
+    }
+
+    async fn verify_setup(&self) -> Result<()> {
+        // install playwright
         let bar = bar!("Installing playwright...", 7);
         Command::new("pnpm")
             .arg("run")
@@ -191,6 +204,14 @@ impl Node {
         }
         bar.finish();
 
+        Ok(())
+    }
+
+    pub async fn create_project(&self) -> Result<()> {
+        self.setup_project_structure().await?;
+        self.install_dependencies().await?;
+        self.configure_biome().await?;
+        self.verify_setup().await?;
         Ok(())
     }
 }
