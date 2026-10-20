@@ -24,3 +24,7 @@ Axumベースでaxum-testやanyhow、tracing等が入っています。
 ### フロントエンド
 
 FarmのReactテンプレートを用いてプロジェクトを生成します。パッケージマネージャはpnpmを使用します。biomeがセットアップ済みです。
+
+## スポンサー
+
+react-axum-template が役に立ったら、開発・メンテナンスを支援するために [GitHub Sponsors](https://github.com/sponsors/takumi3488) でのスポンサーをご検討ください。
